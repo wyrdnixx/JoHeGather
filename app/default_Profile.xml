@@ -1,0 +1,8 @@
+<JoHeGather>
+    <masterserver server="192.168.1.21"></masterserver>
+    <gather id="test">
+        <item type="text" text="hallo"/>
+        <item type="select" text="select-text" options="1;2;3"/>
+        <item type="nfc" text="nfc" fieldId="1"/>
+    </gather>
+</JoHeGather>
