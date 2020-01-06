@@ -108,6 +108,20 @@ public class A_MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+
+            // Erstelle ein Intent für die neue Activity
+            Intent settingsintent = new Intent(this, A_settings.class);
+
+            // Packe das Objekt param in ein Bundle und übergebe es an das Intent (die neue Activity)
+            // wird in der onCreacte Methode der Activity entgegen genommen.
+            Bundle b = new Bundle();
+            b.putSerializable("joheGather_param",param);
+//        intent.putExtras(b);
+            b.putSerializable("joheGather_util", util);
+            settingsintent.putExtras(b);
+            // Starte die neue Activity
+            startActivity(settingsintent);
+
             return true;
         }
 
@@ -135,7 +149,7 @@ public class A_MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+    /*    FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -145,7 +159,7 @@ public class A_MainActivity extends AppCompatActivity {
             }
         });
 
-
+*/
         tv_InfoNo = (TextView)findViewById(R.id.tv_InfoNotSync);
 
 
@@ -175,7 +189,7 @@ public class A_MainActivity extends AppCompatActivity {
         util = new Util(param.getBaseAppDir(),param , context);
 
 
-
+        util.readSettings(param);
 
 
         // Programmstart inLogfile schreiben
@@ -244,16 +258,7 @@ public class A_MainActivity extends AppCompatActivity {
                 }
             });
             ///////////////////////////////////////////////
-/**
-            // Button save
-            Button btn = (Button) findViewById(R.id.btn_save);
-            btn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    btnSaveClicked();
-                }
-            });
-**/
+
 
         // Button Start Gather
         Button btn_startGather = (Button) findViewById(R.id.btn_StartGather);
@@ -267,39 +272,15 @@ public class A_MainActivity extends AppCompatActivity {
 
 
 /// --> übergangsweise, bis der Server im Programm auhc kontorliert und gesetzt werden kann.
-        param.setMasterServer("omega.chaos.local");
+        // param.setMasterServer("omega.chaos.local");
 
 // NFC
-      /*  mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
-
-        if (mNfcAdapter == null) {
-            // Stop here, we definitely need NFC
-            Toast.makeText(this, "This device doesn't support NFC.", Toast.LENGTH_LONG).show();
-            finish();
-            return;
-
-        }
-
-        if (!mNfcAdapter.isEnabled()) {
-            message("NFC is disabled!");
-        } else {
-           // message("DEBUG: NFC-Device found: " + mNfcAdapter.toString());
-
-        }
-
-        Util.log(2,"NFCAdapter found: : " + mNfcAdapter.toString());
-*/
-
-        //handleIntent(getIntent());
-
-
-
         mAdapter = NfcAdapter.getDefaultAdapter(this);
         if (mAdapter == null) {
             //nfc not support your device.
             return;
         } else {
-            Util.log(2,"NFCAdapter found: : " + mAdapter.toString());
+            Util.log(1,"NFCAdapter found: : " + mAdapter.toString());
         }
 
         mPendingIntent = PendingIntent.getActivity(this, 0, new Intent(this,
@@ -312,10 +293,19 @@ public class A_MainActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
+
         reloadFileView();
+
+
         //setupForegroundDispatch(this, mNfcAdapter);
         mAdapter.enableForegroundDispatch(this, mPendingIntent, null, null);
+
     }
+
+    public interface AsyncResponse {
+        void processFinish(String output);
+    }
+
 
 
     public  void reloadFileView() {
@@ -383,7 +373,8 @@ public class A_MainActivity extends AppCompatActivity {
 
         if (fl.size() >=1){
             // new UploadDatafile(this,param).execute();
-           new UploadDatafile(this,param, fl).execute();
+            util.readSettings(param);
+           new UploadDatafile(this,param,util, fl).execute();
 
 
         } else {
@@ -519,11 +510,11 @@ dialog.show();
 
                  if (isWifiAv) {
                      util.log(1,"WIFI has become available...");
-                     Toast.makeText(getApplicationContext(), "Network Connection available", Toast.LENGTH_SHORT).show();
+                   //  Toast.makeText(getApplicationContext(), "Network Connection available", Toast.LENGTH_SHORT).show();
                      NetworkAvailable = true;
                  } else if (isGSMAv) {
                      util.log(1,"GSM has become available...");
-                     Toast.makeText(getApplicationContext(), "Network Connection available", Toast.LENGTH_SHORT).show();
+                  //   Toast.makeText(getApplicationContext(), "Network Connection available", Toast.LENGTH_SHORT).show();
                      NetworkAvailable = true;
                  } else {
                      util.log(2,"Network Connection lost...");

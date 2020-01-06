@@ -9,6 +9,7 @@ import android.icu.util.RangeValueIterator;
 import android.icu.util.ValueIterator;
 import android.os.AsyncTask;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
@@ -20,7 +21,10 @@ import com.jcraft.jsch.SftpException;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 
@@ -39,7 +43,8 @@ public class UploadDatafile extends AsyncTask<Void,Void,String> {
   //  File file;
     List<File> FileList;
     private Param param;
-
+    private Util util;
+    
     // Konstruktor
     // UploadDatafile(Context _context,Param _param, File _file) {
     /*
@@ -49,13 +54,14 @@ public class UploadDatafile extends AsyncTask<Void,Void,String> {
         context = _context;
     }
 */
-    UploadDatafile(Context _context,Param _param, List<File> _fl) {
+    UploadDatafile(Context _context,Param _param, Util _util, List<File> _fl) {
 
         // file  = param.getDatafile();
         param = _param;
+        util = _util;
         context = _context;
         FileList = _fl;
-        log(1, "Upload Files started... ");
+        util.log(1, "Upload Files started... ");
     }
 
     // AsyncTask Methods
@@ -63,21 +69,21 @@ public class UploadDatafile extends AsyncTask<Void,Void,String> {
     protected String doInBackground(Void... params) {
 
 
-        log(1, "Background Upload process started... ");
+        util.log(1, "Background Upload process started... ");
 
         JSch jsch = null;
         try {
            jsch = new JSch();
-            log(1, "JSch instance started...");
+            util.log(1, "JSch instance started...");
         } catch (Exception e) {
-            log(2, e.getMessage());
+            util.log(2, e.getMessage());
         }
 
 
         // String host ="192.168.1.20", username="tester", password="password";
 
         String host=param.getMasterServer(), username=param.getMasterServerUser(), password=param.getMasterServerPassword();
-        log(1, "Host parameter set to: " + host + " , Username: " + username);
+        util.log(1, "Host parameter set to: " + host + " , Username: " + username);
 /*
         String localFilePath = file.getAbsolutePath();
         String fileName = localFilePath.substring(localFilePath.lastIndexOf("/") + 1);
@@ -87,7 +93,7 @@ public class UploadDatafile extends AsyncTask<Void,Void,String> {
         Session session = null;
 
         synchronized (this) {
-            log(1, "synchronized process started... ");
+            util.log(1, "synchronized process started... ");
             publishProgress();
             try {
 
@@ -98,11 +104,11 @@ public class UploadDatafile extends AsyncTask<Void,Void,String> {
                 session.setTimeout(5000);
                 session.connect();
 
-                log(1, "Session established to " + host);
+                util.log(1, "SFTP: Session established to " + host);
 
                 Channel channel = session.openChannel("sftp");
                 channel.connect();
-                log(1, "Channel connected to " + host);
+                util.log(1, "SFTP: Channel connected to " + host);
                 ChannelSftp sftpChannel = (ChannelSftp) channel;
 
                 for (File f : FileList) {
@@ -110,28 +116,39 @@ public class UploadDatafile extends AsyncTask<Void,Void,String> {
                     String localFilePath = f.getAbsolutePath();
                     String fileName = localFilePath.substring(localFilePath.lastIndexOf("/") + 1);
 
+                    // Ausnahme für NFCReader.csv Datei
+                    if (fileName.equals("NFCReader.csv")) {
+
+                        Date date = new Date();
+                        DateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");
+                        String timestamp = dateFormat.format(date);
+
+                        String[] ar = fileName.split(".csv");
+                        fileName= ar[0] + "_" + timestamp + ".csv";
+                    }
+
+
                     String remoteFilePath = "/" + fileName;
 
-
                     sftpChannel.put(localFilePath, remoteFilePath);
-                    log(1, "File put successfully " + host);
+                    util.log(1, "SFTP: File put successfully " + host);
 
                     File targetDir = new File(param.getBaseAppDir().toString() + "/archive");
 
                     if (!targetDir.exists()) {
-                        log(1, "Archive Dir does not exist.. creating: " + targetDir.toString());
+                        util.log(1, "Archive Dir does not exist.. creating: " + targetDir.toString());
                         targetDir.mkdir();
                     }
 
                     File dest = new File(targetDir.toString() + "/"+ fileName.toString());
                     try {
                         copyFile(f,dest);
-                        log(1, "File archived to: " + dest.getPath());
+                        util.log(1, "File archived to: " + dest.getPath());
                         f.delete();
-                        log(1, "Orginal File deleted...");
+                        util.log(1, "Orginal File deleted...");
 
                     } catch (Exception e) {
-                        log(3, "ERROR: File Copy failed... " + e.getMessage());
+                        util.log(3, "ERROR: SFTP: File Copy failed... " + e.getMessage());
                     }
 
 
@@ -140,7 +157,7 @@ public class UploadDatafile extends AsyncTask<Void,Void,String> {
 
                 sftpChannel.exit();
                 session.disconnect();
-                log(1, "Channel and Session closed to " + host);
+                util.log(1, "SFTP: Channel and Session closed to " + host);
 
 
                 // wait(2000);
@@ -148,14 +165,14 @@ public class UploadDatafile extends AsyncTask<Void,Void,String> {
 
             catch (JSchException e) {
             e.printStackTrace();
-            log(3,"JSchExeption: " + e.getMessage());
+            util.log(3,"SftpExeption: " + e.getMessage());
             return "JSchExeption: " + e.getMessage();
             } catch (SftpException e) {
             e.printStackTrace();
-            log(3,"SftpExeption: " + e.getMessage());
+            util.log(3,"SftpExeption: " + e.getMessage());
             return  "SftpExeption: " + e.getMessage();
             }
-
+            util.log(1,"Sftp: Upload erfolgreich ");
             return "Upload completed...";
         }
 
@@ -171,7 +188,7 @@ public class UploadDatafile extends AsyncTask<Void,Void,String> {
     }
 
 
-
+    public A_MainActivity.AsyncResponse delegate = null;
 
     @Override
     protected void onPostExecute(String _result) {
@@ -179,11 +196,13 @@ public class UploadDatafile extends AsyncTask<Void,Void,String> {
         progressDialog.setProgress(100);
         //progressDialog.setTitle(_result);
         progressDialog.dismiss();
-       // message(_result);
+
 
         super.onPostExecute(_result);
 
-        context.startActivity(new Intent(context, A_MainActivity.class));
+
+
+       context.startActivity(new Intent(context, A_MainActivity.class));
     }
 
     @Override

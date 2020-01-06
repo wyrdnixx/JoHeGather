@@ -40,10 +40,6 @@ public class A_NFCActivity extends AppCompatActivity {
 
 
         Button btnSave = (Button) findViewById(R.id.btnSave);
-
-        //btnSave.setText("Speichern");
-        //btnSave.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT,
-          //      LinearLayout.LayoutParams.WRAP_CONTENT));
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

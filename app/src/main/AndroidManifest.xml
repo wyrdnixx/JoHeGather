@@ -14,7 +14,11 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".A_NFCActivity"></activity>
+        <activity
+            android:name=".A_settings"
+            android:label="@string/title_activity_a_settings"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity android:name=".A_NFCActivity" />
         <activity
             android:name=".A_MainActivity"
             android:label="@string/app_name"

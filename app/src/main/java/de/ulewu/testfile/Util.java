@@ -29,6 +29,7 @@ package de.ulewu.testfile;
         import java.io.FileReader;
         import java.io.FileWriter;
         import java.io.FilenameFilter;
+        import java.io.InputStreamReader;
         import java.nio.channels.FileChannel;
         import java.security.MessageDigest;
 
@@ -54,6 +55,10 @@ public class Util implements Serializable {
     public static File logFile;
     public  static Context context;
     public static  Param param;
+
+    String SettingsFileName = "johegather.settings";
+
+
     // Konstruktor
     public  Util(File BaseAppDir, Param _param, Context _context){
 
@@ -85,8 +90,22 @@ public class Util implements Serializable {
             try
             {
                 // löschen und neue erstellen.
-                logFile.delete();
-                logFile.createNewFile();
+
+
+                // Get length of file in bytes
+                long fileSizeInBytes = logFile.length();
+                // Convert the bytes to Kilobytes (1 KB = 1024 Bytes)
+                long fileSizeInKB = fileSizeInBytes / 1024;
+                //  Convert the KB to MegaBytes (1 MB = 1024 KBytes)
+                //long fileSizeInMB = fileSizeInKB / 1024;
+
+                // Logfile größer 20Kb -> löschen und neu erstellen
+                if (fileSizeInKB > 20) {
+                    logFile.delete();
+                    logFile.createNewFile();
+                }
+
+
             }
             catch (IOException e)
             {
@@ -342,6 +361,77 @@ public List<Gather> updateProfileData(File _xmlFile){
     } // public static void log
 
 
+    public boolean writeSettings(String _server, String _user, String _password) {
+
+
+        File settingsFile = new File(param.getBaseAppDir(), SettingsFileName );
+
+        String _data = "Server:" +_server + System.getProperty("line.separator") +
+                "Username:"+_user + System.getProperty("line.separator") +
+                "Password:"+_password + System.getProperty("line.separator");
+
+        try {
+            FileOutputStream stream = new FileOutputStream(settingsFile,false);
+
+            stream.write(_data.getBytes());
+            stream.close();
+            return true;
+        } catch (Exception e) {
+            log(3,"ERROR while File Write: " + e.getMessage());
+            message("ERROR while File Write: " + e.getMessage());
+        }
+        log(1,"File written: "+ settingsFile.getPath());
+        return false;
+
+    }
+
+
+
+    public void readSettings(Param _param) {
+
+        File settingsFile = new File(param.getBaseAppDir(), SettingsFileName );
+        FileInputStream is;
+        BufferedReader reader;
+        if (settingsFile.exists()) {
+            try {
+                is = new FileInputStream(settingsFile);
+                reader = new BufferedReader(new InputStreamReader(is));
+                String line = reader.readLine();
+                while(line != null){
+                        log(1,"Read Settings File Line: " + line);
+
+                        try {
+                            String[] arrayString = line.split(":");
+
+                            switch (arrayString[0]){
+                                case "Server":
+                                    param.setMasterServer(arrayString[1]);
+                                    break;
+                                case "Username":
+                                    param.setMasterServerUser(arrayString[1]);
+                                    break;
+                                case "Password":
+                                    param.setMasterServerPassword(arrayString[1]);
+                                    break;
+                            }
+
+                        } catch (Exception e) {
+                            log(3,"ERROR Parsing Settings File: " + e.getMessage());
+                        }
+
+                        // next line
+                        line = reader.readLine();
+                }
+            } catch (Exception e) {
+                log(3,"ERROR Reading Settings File: " + e.getMessage());
+            }
+
+        }
+
+    }
+
+
+
     public String writeToFile(String _gather, String _data) {
 
         // Dateiname setzen
@@ -352,7 +442,7 @@ public List<Gather> updateProfileData(File _xmlFile){
         String FileName = getDeviceSN() + "_" + _gather + "_" + currentDateTimeString + ".csv";
 
         if (_gather =="NFCReader") {
-            FileName = "NFCReader_" + currentDateTimeString + ".csv";
+            FileName = "NFCReader" + ".csv";
         }
 
         param.setDatafile(new File(param.getBaseAppDir(), FileName ));
