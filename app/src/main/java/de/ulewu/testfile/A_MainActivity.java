@@ -54,7 +54,7 @@ import android.nfc.NdefRecord;
 
 
 
-public class A_MainActivity extends AppCompatActivity {
+public class A_MainActivity extends AppCompatActivity  implements AsyncTaskListener {
 
     public static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 99;
 
@@ -375,6 +375,7 @@ public class A_MainActivity extends AppCompatActivity {
             // new UploadDatafile(this,param).execute();
             util.readSettings(param);
            new UploadDatafile(this,param,util, fl).execute();
+            //AsyncTask UploadTask = new UploadDatafile(this,param,util, fl);
 
 
         } else {
@@ -393,6 +394,20 @@ public class A_MainActivity extends AppCompatActivity {
       //  reloadFileView();
 
     }
+
+    // Callback Methode über Interface - Empfängt UploadStatus
+    public void giveUploadStatus(String _result){
+
+        if (_result == "Upload completed...") {
+            message("Upload erfolgreich...");
+            reloadFileView();
+        } else {
+            message("Fehler beim Upload der Daten: " + _result);
+        }
+
+    }
+
+
 
     private void FileListViewClicked(int _pos) {
         //message(lv.getSelectedItem().toString());
@@ -541,5 +556,9 @@ dialog.show();
         });
         ad.show();
     }
+
+
+
+
 
 }

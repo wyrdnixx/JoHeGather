@@ -26,7 +26,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-
+import android.os.AsyncTask;
 
 import static de.ulewu.testfile.Util.copyFile;
 import static de.ulewu.testfile.Util.log;
@@ -37,6 +37,8 @@ import static de.ulewu.testfile.Util.log;
 
 public class UploadDatafile extends AsyncTask<Void,Void,String> {
 
+
+
     Context context;
 
     ProgressDialog progressDialog;
@@ -44,16 +46,12 @@ public class UploadDatafile extends AsyncTask<Void,Void,String> {
     List<File> FileList;
     private Param param;
     private Util util;
-    
+
+    // Interface AsyncTaskListener für Callback an Main Activity
+    private AsyncTaskListener listener;
+
+
     // Konstruktor
-    // UploadDatafile(Context _context,Param _param, File _file) {
-    /*
-    UploadDatafile(Context _context,Param _param) {
-        param = _param;
-        file  = param.getDatafile();
-        context = _context;
-    }
-*/
     UploadDatafile(Context _context,Param _param, Util _util, List<File> _fl) {
 
         // file  = param.getDatafile();
@@ -61,6 +59,11 @@ public class UploadDatafile extends AsyncTask<Void,Void,String> {
         util = _util;
         context = _context;
         FileList = _fl;
+
+        // Interface AsyncTaskListener für Callback an Main Activity
+        listener= (AsyncTaskListener)_context;
+
+
         util.log(1, "Upload Files started... ");
     }
 
@@ -188,7 +191,10 @@ public class UploadDatafile extends AsyncTask<Void,Void,String> {
     }
 
 
-    public A_MainActivity.AsyncResponse delegate = null;
+//    public A_MainActivity.AsyncResponse delegate = null;
+
+
+
 
     @Override
     protected void onPostExecute(String _result) {
@@ -200,9 +206,10 @@ public class UploadDatafile extends AsyncTask<Void,Void,String> {
 
         super.onPostExecute(_result);
 
+        // Upload Status über Interface an Hauptklasse übergeben.
+        listener.giveUploadStatus(_result);
 
-
-       context.startActivity(new Intent(context, A_MainActivity.class));
+       // context.startActivity(new Intent(context, A_MainActivity.class));
     }
 
     @Override

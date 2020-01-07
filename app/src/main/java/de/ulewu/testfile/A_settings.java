@@ -14,6 +14,9 @@ public class A_settings extends AppCompatActivity {
     private Param param;
     private Util util;
 
+    // Interface
+    private AsyncTaskListener listener;
+
     EditText etServer;
     EditText etUser;
     EditText etPassword;
@@ -23,6 +26,7 @@ public class A_settings extends AppCompatActivity {
         setContentView(R.layout.activity_a_settings);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
 
         util = (Util) getIntent().getSerializableExtra("joheGather_util");
         param = (Param) getIntent().getSerializableExtra("joheGather_param");
@@ -71,6 +75,7 @@ public class A_settings extends AppCompatActivity {
             String Password = etPassword.getText().toString();
 
             Boolean res = util.writeSettings(Server,User,Password);
+
             finish();
         } catch (Exception e) {
             message("Error: " + e.getMessage());
