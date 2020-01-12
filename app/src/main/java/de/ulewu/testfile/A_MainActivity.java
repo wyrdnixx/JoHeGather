@@ -327,7 +327,8 @@ public class A_MainActivity extends AppCompatActivity  implements AsyncTaskListe
             //   message("Sie haben nicht syncronisierte Daten... \r\n Bitte Upload durchführen.");
 
             for (File f : fl) {
-                file_list.add(f.getName());
+                //file_list.add(f.getName());
+                tv_InfoNo.setText("Es sind Daten zum upload vorhanden...");
             }
             tv_InfoNo.setVisibility(View.VISIBLE);
         } else {
